@@ -6,34 +6,53 @@
     Modified by sktometometo ( sktometometo@gmail.com )
 */
 #include <M5Stack.h>
+
+#include <ros/node_handle.h>
+#include <ArduinoHardware.h>
+#include <std_msgs/UInt16.h>
+
 #include "ECG.h"
 
 ECG ecg;
-//TFT_eSprite TFTChart = TFT_eSprite(&M5.Lcd);
-//TFT_eSprite TFTNum = TFT_eSprite(&M5.Lcd);
+
+ros::NodeHandle_<ArduinoHardware, 25, 25, 4096, 4096> nh;
+std_msgs::UInt16 msg_data;
+std_msgs::UInt16 msg_heart_rate;
+ros::Publisher publisher_data("~data", &msg_data);
+ros::Publisher publisher_heart_rate("~heart_rate", &msg_heart_rate);
 
 void setup() {
     M5.begin(true,false,true,false);
     M5.Power.begin();
 
-    Serial.begin(115200);
+    Serial.begin(57600);
+    nh.getHardware()->setBaud(57600);
+    nh.initNode();
+    nh.advertise( publisher_data );
+    nh.advertise( publisher_heart_rate );
+    M5.Lcd.printf("Connecting rosserial\n");
+    while ( not nh.connected() ) {
+        nh.spinOnce();
+    }
+    M5.Lcd.printf("rosserial connected\n");
 
-    //TFTChart.createSprite(320,100);
-    //TFTChart.fillRect(0,0,320,100,BLUE);
-    //TFTChart.pushSprite(0,100);
-
-    //TFTNum.createSprite(150,100);
-    //TFTNum.fillRect(0,0,150,100,BLACK);
-    //TFTNum.fillRect(0,0,20,100,RED);
-    //TFTNum.pushSprite(0,0);
+    M5.Lcd.printf("Initialized.\n");
 }
 
 
 void loop() {
     ecg.readData();
-    //ecg.display(TFTChart,TFTNum);
+
     uint16_t data = ecg.getData(0);
-    Serial.println(data);;
+    msg_data.data = data;
+    publisher_data.publish(&msg_data);
+
+    uint16_t heart_rate = ecg.getHeartRate();
+    msg_heart_rate.data = heart_rate;
+    publisher_heart_rate.publish(&msg_heart_rate);
+
+    nh.spinOnce();
+
     delay(5);
     M5.update();
 }

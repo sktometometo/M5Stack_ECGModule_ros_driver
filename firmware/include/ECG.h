@@ -15,6 +15,7 @@ public:
     void readData();
     void display(TFT_eSprite& tft_chart, TFT_eSprite& tft_num);
     uint16_t getData(int index);
+    uint16_t getHeartRate();
 
 private:
     uint8_t rxBuff[1024];
@@ -148,4 +149,9 @@ void ECG::display(TFT_eSprite& tft_chart, TFT_eSprite& tft_num)
 uint16_t ECG::getData(int index)
 {
     return ECGDataBuff[ ( ECGReadPoint + index ) % 640 ];
+}
+
+uint16_t ECG::getHeartRate()
+{
+    return ECGData16Buff[3]&0x00ff;
 }

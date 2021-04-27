@@ -8,14 +8,14 @@
 #include <M5Stack.h>
 
 #include <ros/node_handle.h>
-#include <ArduinoHardware.h>
+#include <BluetoothHardware.h>
 #include <std_msgs/UInt16.h>
 
 #include "ECG.h"
 
 ECG ecg;
 
-ros::NodeHandle_<ArduinoHardware, 25, 25, 4096, 4096> nh;
+ros::NodeHandle_<BluetoothHardware, 25, 25, 4096, 4096> nh;
 std_msgs::UInt16 msg_data;
 std_msgs::UInt16 msg_heart_rate;
 ros::Publisher publisher_data("~data", &msg_data);
@@ -23,11 +23,9 @@ ros::Publisher publisher_heart_rate("~heart_rate", &msg_heart_rate);
 
 void setup() {
     M5.begin(true,false,true,false);
-    M5.Power.begin();
 
     Serial.begin(57600);
-    nh.getHardware()->setBaud(57600);
-    nh.initNode();
+    nh.initNode("M5Stack ECG ROS");
     nh.advertise( publisher_data );
     nh.advertise( publisher_heart_rate );
     M5.Lcd.printf("Connecting rosserial\n");
@@ -53,6 +51,6 @@ void loop() {
 
     nh.spinOnce();
 
-    delay(5);
+    delay(10);
     M5.update();
 }

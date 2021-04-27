@@ -12,6 +12,9 @@ This repository contains ros driver for [M5Stack ECG Module13.2 (AD8232)](https:
 
 ```bash
 cd firmware
+cd lib
+rosrun rosserial_arduino make_libraries.py .
+cd ..
 pio run -t upload --upload-port <port to M5Stack Fire>
 ```
 
